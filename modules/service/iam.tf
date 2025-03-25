@@ -28,7 +28,7 @@ resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
 
 
 resource "aws_iam_policy" "allow_secrets_access" {
-  name        = "${var.environment_name}-allow-secrets-access"
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-secrets-access"
   description = "Policy to allow ECS task execution role to access secrets"
 
   policy = jsonencode({
@@ -53,7 +53,7 @@ resource "aws_iam_role_policy_attachment" "allow_secrets_access_attachment" {
 
 
 resource "aws_iam_policy" "allow_invoke_bedrock_models" {
-  name        = "${var.environment_name}-allow-invoke-bedrock-models"
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-invoke-bedrock-models"
   description = "Policy to allow ECS task execution role to invoke Bedrock models"
 
   policy = jsonencode({

@@ -96,3 +96,8 @@ variable "iam_role_prefix" {
   type    = string
   default = ""
 }
+
+variable "iam_policy_prefix" {
+  type    = string
+  default = ""
+}
