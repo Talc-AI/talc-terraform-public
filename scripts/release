@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# script is called with a single argument, which is either a version number starting with "v", or major|minor|patch
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <vX.Y.Z|major|minor|patch>"
+    exit 1
+fi
+
+# change to the root git directory
+cd "$(git rev-parse --show-toplevel)"
+
+# check if the current branch is main
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ $current_branch != "main" ]]; then
+    echo "You must be on the main branch to release a new version."
+    exit 1
+fi
+# check if there are any uncommitted changes
+if [[ -n $(git status --porcelain) ]]; then
+    echo "You have uncommitted changes. Please commit or stash them before releasing a new version."
+    exit 1
+fi
+
+
+# check if the argument is a version number or a release type
+if [[ $1 =~ ^v[0-9]+.[0-9]+.[0-9]+$ ]]; then
+    # if it's a version number, use it as the new version
+    new_version=$1
+elif [[ $1 == "major" || $1 == "minor" || $1 == "patch" ]]; then
+    # if it's a release type, increment the corresponding version number
+    release_type=$1
+else
+    echo "Invalid argument: $1"
+    exit 1
+fi
+
+# if a version number was provided, use it instead of the incremented version
+if [[ -n ${new_version+x} ]]; then
+    # remove the leading "v" from the version number
+    new_version=${new_version:1}
+else
+    # get the latest version from the git tags, filtering to only v* tags
+    latest_version=$(git tag -l "v*" | sort -V | tail -n 1)
+    if [[ -z $latest_version ]]; then
+        # if there are no tags, start from 0.0.0
+        latest_version="v0.0.0"
+    fi
+    # remove the leading "v" from the version number
+    latest_version=${latest_version:1}
+    # split the version number into major, minor, and patch
+    IFS='.' read -r major minor patch <<< "$latest_version"
+    # increment the version number based on the release type
+    if [[ $release_type == "major" ]]; then
+        major=$((major + 1))
+        minor=0
+        patch=0
+    elif [[ $release_type == "minor" ]]; then
+        minor=$((minor + 1))
+        patch=0
+    elif [[ $release_type == "patch" ]]; then
+        patch=$((patch + 1))
+    fi
+
+    # format the new version number
+    new_version=$(printf "%d.%d.%d" "$major" "$minor" "$patch")
+fi
+
+echo "Releasing version $new_version"
+
+# check if the version number is already tagged
+if git tag -l "v$new_version" | grep -q "v$new_version"; then
+    echo "Version $new_version already exists. Please choose a different version."
+    exit 1
+fi
+
+# tag and push the new version
+git tag -a "v$new_version" -m "Release version $new_version"
+git push origin
+git push origin "v$new_version"
