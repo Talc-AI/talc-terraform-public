@@ -14,8 +14,8 @@ locals {
     }
     "database" : null,
     "cache" : {
-      "host" : aws_elasticache_serverless_cache.cache.endpoint[0].address
-      "port" : aws_elasticache_serverless_cache.cache.endpoint[0].port
+      "host" : local.cache_endpoint_address
+      "port" : local.cache_endpoint_port
       "ssl" : true
     }
     "llm" : var.svcconfig_llm

@@ -2,15 +2,61 @@ variable "environment_name" {
   type = string
 }
 
+#
+# Cache configuration
+#
+
+variable "cache_serverless" {
+  type    = bool
+  default = true
+}
+
+# Severless-only
+
 variable "cache_max_size_gb" {
   type    = number
-  default = 10
+  default = 10 # if changed, update the check below
+}
+
+locals {
+  cache_max_size_gb_check = var.cache_serverless ? (
+    var.cache_max_size_gb > 0 ? true : error("cache_max_size_gb must be greater than 0 when cache_serverless is true")
+    ) : (
+    (var.cache_max_size_gb == null || var.cache_max_size_gb == 10) ? true : error("cache_max_size_gb must be unset when cache_serverless is false")
+  )
 }
 
 variable "cache_max_ecpu_per_second" {
   type    = number
-  default = 5000
+  default = 5000 # if changed, update the check below
 }
+
+locals {
+  cache_max_ecpu_per_second_check = var.cache_serverless ? (
+    var.cache_max_ecpu_per_second > 0 ? true : error("cache_max_ecpu_per_second must be greater than 0 when cache_serverless is true")
+    ) : (
+    (var.cache_max_ecpu_per_second == null || var.cache_max_ecpu_per_second == 5000) ? true : error("cache_max_ecpu_per_second must be unset when cache_serverless is false")
+  )
+}
+
+# Instance-only
+
+variable "cache_instance_type" {
+  type    = string
+  default = "cache.m7g.large" # if changed, update the check below
+}
+
+locals {
+  cache_instance_type_check = var.cache_serverless ? (
+    var.cache_instance_type == null ? true : error("cache_instance_type must be unset when cache_serverless is true")
+    ) : (
+    (var.cache_instance_type == null || var.cache_instance_type == "cache.m7g.large") ? true : error("cache_instance_type must be unset when cache_serverless is false")
+  )
+}
+
+#
+# Other variables
+#
 
 variable "tags" {
   type = map(string)
