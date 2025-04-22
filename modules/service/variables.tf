@@ -43,14 +43,14 @@ locals {
 
 variable "cache_instance_type" {
   type    = string
-  default = "cache.m7g.large" # if changed, update the check below
+  default = "cache.m7g.xlarge" # if changed, update the check below
 }
 
 locals {
   cache_instance_type_check = var.cache_serverless ? (
-    var.cache_instance_type == null ? true : error("cache_instance_type must be unset when cache_serverless is true")
+    var.cache_instance_type == null || var.cache_instance_type == "cache.m7g.xlarge" ? true : error("cache_instance_type must be unset when cache_serverless is true")
     ) : (
-    (var.cache_instance_type == null || var.cache_instance_type == "cache.m7g.large") ? true : error("cache_instance_type must be unset when cache_serverless is false")
+    (var.cache_instance_type == null ? error("cache_instance_type must be set when cache_serverless is false") : true)
   )
 }
 

@@ -40,7 +40,7 @@ resource "aws_iam_policy" "allow_secrets_access" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
         ]
-        Resource = "*"
+        Resource = aws_secretsmanager_secret.service_auth_tokens.arn
       }
     ]
   })
@@ -64,9 +64,14 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
         Action = [
           "bedrock:InvokeModel",
           "bedrock:InvokeModelWithResponseStream",
-          "bedrock:CreateModelInvocationJob"
+          "bedrock:CreateModelInvocationJob",
+          "bedrock:GetInferenceProfile",
         ]
-        "Resource" = "arn:aws:bedrock:*::foundation-model/*"
+        "Resource" = [
+          "arn:aws:bedrock:*::foundation-model/*",
+          "arn:aws:bedrock:*:*:inference-profile/*",
+          "arn:aws:bedrock:*:*:application-inference-profile/*"
+        ]
       }
     ]
   })

@@ -43,10 +43,14 @@ resource "aws_elasticache_replication_group" "cache" {
   subnet_group_name        = aws_elasticache_subnet_group.cache[0].name
 
   at_rest_encryption_enabled = true
+  transit_encryption_enabled = true
+  transit_encryption_mode = "preferred"
 
   multi_az_enabled           = false
   automatic_failover_enabled = false
   num_cache_clusters         = 1
+
+  apply_immediately = true
 
   tags = merge(
     var.tags,
