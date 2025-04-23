@@ -81,3 +81,33 @@ resource "aws_iam_role_policy_attachment" "allow_invoke_bedrock_models_attachmen
   role       = aws_iam_role.service_task_role.name
   policy_arn = aws_iam_policy.allow_invoke_bedrock_models.arn
 }
+
+resource "aws_iam_policy" "allow_ecr_pull" {
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-ecr-pull"
+  description = "Policy to allow ECS task execution role to pull images from ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action: "ecr:GetAuthorizationToken",
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "arn:aws:ecr:*:${var.deploy_repo_account}:repository/${var.deploy_image_name}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "allow_ecr_pull_attachment" {
+  role       = aws_iam_role.ecs_tasks_execution_role.name
+  policy_arn = aws_iam_policy.allow_ecr_pull.arn
+}
