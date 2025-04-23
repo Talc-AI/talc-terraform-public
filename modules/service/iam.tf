@@ -1,3 +1,7 @@
+#
+# Service Task Role
+#
+
 resource "aws_iam_role" "service_task_role" {
   name                 = "${var.iam_role_prefix}${var.environment_name}-service-task-role"
   assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
@@ -15,17 +19,15 @@ data "aws_iam_policy_document" "ecs_tasks_assume_role" {
   }
 }
 
-resource "aws_iam_role" "ecs_tasks_execution_role" {
-  name                 = "${var.iam_role_prefix}${var.environment_name}-ecs-task-execution-role"
-  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
-  permissions_boundary = var.iam_role_permissions_boundary_arn
+resource "aws_iam_role_policy_attachment" "allow_secrets_access_attachment" {
+  role       = aws_iam_role.service_task_role.name
+  policy_arn = aws_iam_policy.allow_secrets_access.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
-  role       = aws_iam_role.ecs_tasks_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+resource "aws_iam_role_policy_attachment" "allow_invoke_bedrock_models_attachment" {
+  role       = aws_iam_role.service_task_role.name
+  policy_arn = aws_iam_policy.allow_invoke_bedrock_models.arn
 }
-
 
 resource "aws_iam_policy" "allow_secrets_access" {
   name        = "${var.iam_policy_prefix}${var.environment_name}-allow-secrets-access"
@@ -44,11 +46,6 @@ resource "aws_iam_policy" "allow_secrets_access" {
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "allow_secrets_access_attachment" {
-  role       = aws_iam_role.service_task_role.name
-  policy_arn = aws_iam_policy.allow_secrets_access.arn
 }
 
 
@@ -77,10 +74,27 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "allow_invoke_bedrock_models_attachment" {
-  role       = aws_iam_role.service_task_role.name
-  policy_arn = aws_iam_policy.allow_invoke_bedrock_models.arn
+#
+# ECS Task Execution Role
+#
+
+resource "aws_iam_role" "ecs_tasks_execution_role" {
+  name                 = "${var.iam_role_prefix}${var.environment_name}-ecs-task-execution-role"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
+  permissions_boundary = var.iam_role_permissions_boundary_arn
 }
+
+resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
+  role       = aws_iam_role.ecs_tasks_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+
+resource "aws_iam_role_policy_attachment" "allow_ecr_pull_attachment" {
+  role       = aws_iam_role.ecs_tasks_execution_role.name
+  policy_arn = aws_iam_policy.allow_ecr_pull.arn
+}
+
 
 resource "aws_iam_policy" "allow_ecr_pull" {
   name        = "${var.iam_policy_prefix}${var.environment_name}-allow-ecr-pull"
@@ -91,7 +105,7 @@ resource "aws_iam_policy" "allow_ecr_pull" {
     Statement = [
       {
         Effect = "Allow"
-        Action: "ecr:GetAuthorizationToken",
+        Action : "ecr:GetAuthorizationToken",
         Resource = "*"
       },
       {
@@ -105,9 +119,4 @@ resource "aws_iam_policy" "allow_ecr_pull" {
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "allow_ecr_pull_attachment" {
-  role       = aws_iam_role.ecs_tasks_execution_role.name
-  policy_arn = aws_iam_policy.allow_ecr_pull.arn
 }
