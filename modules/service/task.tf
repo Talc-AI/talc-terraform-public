@@ -48,6 +48,10 @@ resource "aws_ecs_task_definition" "service_task" {
         {
           name  = "SVCCONFIG_DATA"
           value = yamlencode(local.svcconfig)
+        },
+        {
+          name = "AWS_REGION"
+          value = var.region
         }
       ]
       memoryReservation = var.service_memory_mb
