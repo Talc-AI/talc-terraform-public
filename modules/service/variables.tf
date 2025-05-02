@@ -143,7 +143,12 @@ variable "secrets_manager_prefix" {
   default = ""
 }
 
-variable "iam_role_prefix" {
+variable "default_iam_role_prefix" {
+  type    = string
+  default = ""
+}
+
+variable "service_task_role_prefix" {
   type    = string
   default = ""
 }

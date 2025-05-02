@@ -3,7 +3,7 @@
 #
 
 resource "aws_iam_role" "service_task_role" {
-  name                 = "${var.iam_role_prefix}${var.environment_name}-service-task-role"
+  name                 = "${coalesce(var.service_task_role_prefix, var.default_iam_role_prefix)}${var.environment_name}-service-task-role"
   assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
   permissions_boundary = coalesce(var.service_task_role_permissions_boundary_arn, var.default_iam_role_permissions_boundary_arn)
 }
@@ -79,7 +79,7 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
 #
 
 resource "aws_iam_role" "ecs_tasks_execution_role" {
-  name                 = "${var.iam_role_prefix}${var.environment_name}-ecs-task-execution-role"
+  name                 = "${var.default_iam_role_prefix}${var.environment_name}-ecs-task-execution-role"
   assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
   permissions_boundary = var.default_iam_role_permissions_boundary_arn
 }
