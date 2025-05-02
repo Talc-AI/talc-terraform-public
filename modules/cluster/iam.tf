@@ -1,6 +1,6 @@
 resource "aws_iam_role" "ecs_instance_role" {
   name                 = "${var.iam_role_prefix}${var.environment_name}-ecs-instance-role"
-  permissions_boundary = var.iam_role_permissions_boundary_arn
+  permissions_boundary = var.default_iam_role_permissions_boundary_arn
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [

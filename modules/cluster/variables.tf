@@ -65,7 +65,7 @@ variable "iam_policy_prefix" {
   default = ""
 }
 
-variable "iam_role_permissions_boundary_arn" {
+variable "default_iam_role_permissions_boundary_arn" {
   type    = string
   default = null
 }

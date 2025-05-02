@@ -128,7 +128,12 @@ variable "svcconfig_llm" {
   type = any
 }
 
-variable "iam_role_permissions_boundary_arn" {
+variable "default_iam_role_permissions_boundary_arn" {
+  type    = string
+  default = null
+}
+
+variable "service_task_role_permissions_boundary_arn" {
   type    = string
   default = null
 }
