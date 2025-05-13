@@ -3,9 +3,9 @@
 #
 
 resource "aws_iam_role" "service_task_role" {
-  name                 = "${coalesce(var.service_task_role_prefix, var.default_iam_role_prefix)}${var.environment_name}-service-task-role"
+  name                 = "${try(coalesce(var.service_task_role_prefix, var.default_iam_role_prefix), "")}${var.environment_name}-service-task-role"
   assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume_role.json
-  permissions_boundary = coalesce(var.service_task_role_permissions_boundary_arn, var.default_iam_role_permissions_boundary_arn)
+  permissions_boundary = try(coalesce(var.service_task_role_permissions_boundary_arn, var.default_iam_role_permissions_boundary_arn), null)
 }
 
 data "aws_iam_policy_document" "ecs_tasks_assume_role" {
