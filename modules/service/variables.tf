@@ -157,3 +157,18 @@ variable "iam_policy_prefix" {
   type    = string
   default = ""
 }
+
+variable "dynamodb_table_prefix" {
+  type    = string
+  default = ""
+}
+
+variable "s3_bucket_prefix" {
+  type    = string
+  default = ""
+}
+
+variable "s3_file_storage_lifecycle_expiration_days" {
+  type    = number
+  default = 7
+}
