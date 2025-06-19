@@ -10,6 +10,10 @@ resource "aws_s3_bucket" "file_storage" {
 resource "aws_s3_bucket_lifecycle_configuration" "uploads__expire_after_one_day" {
   bucket = aws_s3_bucket.file_storage.id
 
+  timeouts {
+    create = "5m"
+  }
+
   rule {
     id     = "auto-delete-objects"
     status = "Enabled"
@@ -22,10 +26,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "uploads__expire_after_one_day"
       days = var.s3_file_storage_lifecycle_expiration_days
     }
   }
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "results__expire_after_one_day" {
-  bucket = aws_s3_bucket.file_storage.id
 
   rule {
     id     = "auto-delete-objects"
