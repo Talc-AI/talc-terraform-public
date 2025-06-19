@@ -29,6 +29,16 @@ resource "aws_iam_role_policy_attachment" "allow_invoke_bedrock_models_attachmen
   policy_arn = aws_iam_policy.allow_invoke_bedrock_models.arn
 }
 
+resource "aws_iam_role_policy_attachment" "allow_s3_storage_access_attachment" {
+  role       = aws_iam_role.service_task_role.name
+  policy_arn = aws_iam_policy.allow_s3_storage_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "allow_dynamodb_access_attachment" {
+  role       = aws_iam_role.service_task_role.name
+  policy_arn = aws_iam_policy.allow_dynamodb_access.arn
+}
+
 resource "aws_iam_policy" "allow_secrets_access" {
   name        = "${var.iam_policy_prefix}${var.environment_name}-allow-secrets-access"
   description = "Policy to allow ECS task execution role to access secrets"
@@ -69,6 +79,52 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
           "arn:aws:bedrock:*:*:inference-profile/*",
           "arn:aws:bedrock:*:*:application-inference-profile/*"
         ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "allow_s3_storage_access" {
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-s3-storage-access"
+  description = "Policy to allow ECS task execution role to access S3 storage for uploads and results"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${aws_s3_bucket.file_storage.arn}/*",
+          aws_s3_bucket.file_storage.arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "allow_dynamodb_access" {
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-dynamodb-access"
+  description = "Policy to allow ECS task execution role to access DynamoDB"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_prefix}${var.environment_name}*"
       }
     ]
   })
