@@ -55,3 +55,17 @@ resource "aws_dynamodb_table" "async_task_result" {
   }
 
 }
+
+
+resource "aws_dynamodb_table" "execution_plan" {
+  name         = "${var.dynamodb_table_prefix}${var.environment_name}execution_plan"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "plan_id"
+
+
+  attribute {
+    name = "plan_id"
+    type = "S"
+  }
+
+}
