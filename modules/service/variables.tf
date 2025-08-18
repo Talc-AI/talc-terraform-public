@@ -172,3 +172,8 @@ variable "s3_file_storage_lifecycle_expiration_days" {
   type    = number
   default = 7
 }
+
+variable "deployment_environment" {
+  type = string
+  default = "prod"
+}
