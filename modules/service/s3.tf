@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "dataset_bucket" {
-  bucket = "${var.environment_name}-datasets"
+  bucket = "${var.s3_bucket_prefix}${var.environment_name}-datasets"
 }
 
 resource "aws_s3_bucket" "file_storage" {
