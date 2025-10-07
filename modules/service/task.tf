@@ -22,6 +22,32 @@ resource "aws_ecs_service" "service" {
   }
 }
 
+locals {
+  task_cw_agent_config = jsonencode({
+    logs = {
+      force_flush_interval = 15
+      logs_collected = {
+        files = {
+          collect_list = [
+            {
+              file_path       = "/var/log/talc/error.log"
+              log_group_name  = aws_cloudwatch_log_group.service_error_logs.name
+              log_stream_name = "{cluster}/{task_id}"
+              timezone        = "UTC"
+            },
+            {
+              file_path       = "/var/log/talc/sensitive.log"
+              log_group_name  = aws_cloudwatch_log_group.service_sensitive_logs.name
+              log_stream_name = "{cluster}/{task_id}"
+              timezone        = "UTC"
+            }
+          ]
+        }
+      }
+    }
+  })
+}
+
 resource "aws_ecs_task_definition" "service_task" {
   # do not create if deployment revision is unset
   count = var.deploy_tag == null ? 0 : 1
@@ -33,6 +59,9 @@ resource "aws_ecs_task_definition" "service_task" {
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"
+  }
+  volume {
+    name = "shared-logs"
   }
   container_definitions = jsonencode([
     {
@@ -50,8 +79,19 @@ resource "aws_ecs_task_definition" "service_task" {
           value = yamlencode(local.svcconfig)
         },
         {
-          name = "AWS_REGION"
+          name  = "AWS_REGION"
           value = var.region
+        },
+        {
+          name  = "TALC_LOG_DIR"
+          value = "/var/log/talc"
+        }
+      ]
+      mountPoints = [
+        {
+          sourceVolume  = "shared-logs"
+          containerPath = "/var/log/talc"
+          readOnly      = false
         }
       ]
       memoryReservation = var.service_memory_mb
@@ -70,8 +110,53 @@ resource "aws_ecs_task_definition" "service_task" {
           awslogs-stream-prefix : "ecs"
         }
       }
+    },
+    {
+      name      = "cw-agent"
+      image     = "amazon/cloudwatch-agent:latest"
+      essential = false
+
+      environment = [
+        {
+          name  = "CW_CONFIG_CONTENT"
+          value = local.task_cw_agent_config
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.region
+        }
+      ]
+
+      mountPoints = [
+        {
+          sourceVolume  = "shared-logs"
+          containerPath = "/var/log/talc"
+          readOnly      = false
+        }
+      ]
+
+      command = [
+        "/opt/aws/amazon-cloudwatch-agent/bin/start-amazon-cloudwatch-agent",
+        "-a", "fetch-config",
+        "-m", "ec2",
+        "-c", "env:CW_CONFIG_CONTENT",
+        "-s"
+      ]
+
+      logConfiguration = {
+        logDriver : "awslogs",
+        options : {
+          awslogs-group : aws_cloudwatch_log_group.service_logs.name,
+          awslogs-region : var.region,
+          awslogs-stream-prefix : "cwagent"
+        }
+      }
     }
   ])
 
-  depends_on = [aws_cloudwatch_log_group.service_logs]
+  depends_on = [
+    aws_cloudwatch_log_group.service_logs,
+    aws_cloudwatch_log_group.service_error_logs,
+    aws_cloudwatch_log_group.service_sensitive_logs
+  ]
 }
