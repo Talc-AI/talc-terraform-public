@@ -85,6 +85,10 @@ resource "aws_ecs_task_definition" "service_task" {
         {
           name  = "TALC_LOG_DIR"
           value = "/var/log/talc"
+        },
+        {
+          name  = "DEPLOY_VERSION"
+          value = var.deploy_tag
         }
       ]
       mountPoints = [
