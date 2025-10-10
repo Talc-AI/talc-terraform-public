@@ -116,9 +116,10 @@ resource "aws_ecs_task_definition" "service_task" {
       }
     },
     {
-      name      = "cw-agent"
-      image     = "amazon/cloudwatch-agent:latest"
-      essential = false
+      name              = "cw-agent"
+      image             = "amazon/cloudwatch-agent:latest"
+      essential         = false
+      memoryReservation = 4096
 
       environment = [
         {
