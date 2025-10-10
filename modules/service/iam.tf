@@ -39,6 +39,11 @@ resource "aws_iam_role_policy_attachment" "allow_dynamodb_access_attachment" {
   policy_arn = aws_iam_policy.allow_dynamodb_access.arn
 }
 
+resource "aws_iam_role_policy_attachment" "allow_cw_agent_write_sensitive_error_attachment" {
+  role       = aws_iam_role.service_task_role.name
+  policy_arn = aws_iam_policy.allow_cw_agent_write_sensitive_error.arn
+}
+
 resource "aws_iam_policy" "allow_secrets_access" {
   name        = "${var.iam_policy_prefix}${var.environment_name}-allow-secrets-access"
   description = "Policy to allow ECS task execution role to access secrets"
@@ -125,6 +130,29 @@ resource "aws_iam_policy" "allow_dynamodb_access" {
           "dynamodb:Scan"
         ]
         Resource = "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_prefix}${var.environment_name}*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "allow_cw_agent_write_sensitive_error" {
+  name        = "${var.iam_policy_prefix}${var.environment_name}-allow-cw-agent-write-sensitive-error"
+  description = "Let cw-agent put logs to the error & sensitive groups"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ],
+        Resource = [
+          "${aws_cloudwatch_log_group.service_error_logs.arn}:*",
+          "${aws_cloudwatch_log_group.service_sensitive_logs.arn}:*"
+        ]
       }
     ]
   })
