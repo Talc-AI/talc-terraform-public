@@ -32,13 +32,13 @@ locals {
             {
               file_path       = "/var/log/talc/error.log"
               log_group_name  = aws_cloudwatch_log_group.service_error_logs.name
-              log_stream_name = "{cluster}/{task_id}"
+              log_stream_name = var.deploy_tag
               timezone        = "UTC"
             },
             {
               file_path       = "/var/log/talc/sensitive.log"
               log_group_name  = aws_cloudwatch_log_group.service_sensitive_logs.name
-              log_stream_name = "{cluster}/{task_id}"
+              log_stream_name = var.deploy_tag
               timezone        = "UTC"
             }
           ]
