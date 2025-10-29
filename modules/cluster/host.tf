@@ -82,7 +82,7 @@ resource "aws_launch_template" "ecs_host_template" {
 
     echo "ECS_CLUSTER=${local.cluster_name}" >> /etc/ecs/ecs.config
     echo "ECS_CONTAINER_STOP_TIMEOUT=${var.ecs_stop_timeout}" >> /etc/ecs/ecs.config
-    echo "ECS_IMAGE_PULL_BEHAVIOR=prefer-cached" >> /etc/ecs/ecs.config
+    echo "ECS_IMAGE_PULL_BEHAVIOR=once" >> /etc/ecs/ecs.config
     EOT
   )
 }
