@@ -123,11 +123,21 @@ resource "aws_iam_policy" "allow_dynamodb_access" {
       {
         Effect = "Allow"
         Action = [
-          "dynamodb:PutItem",
+          # Read Actions
           "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
+          "dynamodb:BatchGetItem",
           "dynamodb:Query",
-          "dynamodb:Scan"
+          "dynamodb:Scan",
+          "dynamodb:ConditionCheckItem",
+          # Write Actions
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:BatchWriteItem",
+          # Other Execution
+          "dynamodb:ExecuteStatement",
+          "dynamodb:BatchExecuteStatement",
+          "dynamodb:ExecuteTransaction",
         ]
         Resource = "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_prefix}${var.environment_name}*"
       }
