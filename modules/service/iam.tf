@@ -78,6 +78,9 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
           "bedrock:InvokeModelWithResponseStream",
           "bedrock:CreateModelInvocationJob",
           "bedrock:GetInferenceProfile",
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe",
+          "aws-marketplace:Unsubscribe"
         ]
         "Resource" = [
           "arn:aws:bedrock:*::foundation-model/*",
