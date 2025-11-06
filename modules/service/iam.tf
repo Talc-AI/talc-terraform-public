@@ -78,15 +78,38 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
           "bedrock:InvokeModelWithResponseStream",
           "bedrock:CreateModelInvocationJob",
           "bedrock:GetInferenceProfile",
-          "aws-marketplace:ViewSubscriptions",
-          "aws-marketplace:Subscribe",
-          "aws-marketplace:Unsubscribe"
         ]
         "Resource" = [
           "arn:aws:bedrock:*::foundation-model/*",
           "arn:aws:bedrock:*:*:inference-profile/*",
           "arn:aws:bedrock:*:*:application-inference-profile/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe",
+          "aws-marketplace:Unsubscribe",
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals : {
+            "ForAllValues:StringEquals" : [
+              # See:
+              # Product IDs: https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-product-ids.html
+              # IAM: https://aws.amazon.com/blogs/security/simplified-amazon-bedrock-model-access/
+              "prod-6dw3qvchef7zy", # Claude 3 Sonnet
+              "prod-m5ilt4siql27k", # Claude 3.5 Sonnet
+              "prod-cx7ovbu5wex7g", # Claude 3.5 Sonnet v2
+              "prod-4dlfvry4v5hbi", # Claude 3.7 Sonnet
+              "prod-mxcfnwvpd6kb4", # Claude Sonnet 4.5
+              "prod-xdkflymybwmvi", # Claude Haiku 4.5
+              "prod-4pmewlybdftbs", # Claude Sonnet 4                
+            ],
+            "aws:CalledViaLast" : "bedrock.amazonaws.com"
+          }
+        }
       }
     ]
   })
