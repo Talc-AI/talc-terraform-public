@@ -94,8 +94,8 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
         ]
         Resource = "*"
         Condition = {
-          StringEquals : {
-            "ForAllValues:StringEquals" : [
+          "ForAllValues:StringEquals" : {
+            "aws-marketplace:ProductId" : [
               # See:
               # Product IDs: https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-product-ids.html
               # IAM: https://aws.amazon.com/blogs/security/simplified-amazon-bedrock-model-access/
@@ -107,6 +107,8 @@ resource "aws_iam_policy" "allow_invoke_bedrock_models" {
               "prod-xdkflymybwmvi", # Claude Haiku 4.5
               "prod-4pmewlybdftbs", # Claude Sonnet 4                
             ],
+          },
+          StringEquals : {
             "aws:CalledViaLast" : "bedrock.amazonaws.com"
           }
         }
